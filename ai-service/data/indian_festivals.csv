@@ -1,0 +1,21 @@
+festival_name,date,impact_level,days_before_spike
+Diwali,2024-11-01,Very High,14
+Navratri,2024-10-03,High,7
+Durga Puja,2024-10-12,High,5
+Eid ul Fitr,2024-04-10,High,5
+Eid ul Adha,2024-06-17,Medium,3
+Christmas,2024-12-25,Medium,5
+Pongal,2025-01-14,High,5
+Holi,2025-03-14,Medium,3
+Wedding Season,2024-11-15,Very High,30
+Republic Day,2025-01-26,Medium,7
+Independence Day,2024-08-15,Low,3
+Raksha Bandhan,2024-08-19,Medium,5
+Onam,2024-09-15,High,7
+Baisakhi,2025-04-13,Medium,4
+Ganesh Chaturthi,2024-09-07,High,6
+Dussehra,2024-10-12,High,7
+Ugadi,2025-03-30,Medium,4
+Vishu,2025-04-14,Medium,3
+Bihu,2025-04-14,Medium,3
+Lohri,2025-01-13,Medium,3

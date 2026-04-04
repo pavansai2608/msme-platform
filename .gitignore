@@ -1,0 +1,8 @@
+node_modules/
+.env
+__pycache__/
+*.pyc
+model/textile_model.pkl
+.DS_Store
+build/
+dist/
