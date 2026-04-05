@@ -34,11 +34,11 @@ export default function SupplierDashboard() {
     e.preventDefault();
     try {
       await API.post('/supplier/quote', quote);
-      setMessage('Quote submitted successfully');
+      setMessage('✅ Quote submitted successfully!');
       setQuote({ productType: '', quantityKg: '', pricePerKg: '', cluster: '', state: '' });
       fetchOrders();
     } catch (err) {
-      setMessage('Error submitting quote');
+      setMessage('❌ Error submitting quote');
     }
   };
 
@@ -50,103 +50,125 @@ export default function SupplierDashboard() {
     msmes: d.count
   }));
 
+  const totalDemandEntries = demand.reduce((sum, d) => sum + (d.count || 0), 0);
+
+  const cardStyle = { background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '24px' };
+  const inputStyle = { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' };
+
   return (
-    <div>
-      <nav className="navbar" style={{ background: 'linear-gradient(90deg, #065f46, #059669)' }}>
-        <div className="navbar-brand">India MSME Platform</div>
-        <div className="navbar-nav">
-          <span className="nav-link">Welcome, {name}</span>
-          <button onClick={logout} className="btn-logout">Logout</button>
+    <div style={{ minHeight: '100vh', background: '#f0f4f8', fontFamily: 'sans-serif' }}>
+      <nav style={{ background: '#276749', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ color: '#fff', margin: 0, fontSize: '20px' }}>India MSME Platform</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ color: '#fff', fontSize: '14px' }}>Welcome, {name}</span>
+          <button onClick={logout} style={{ background: '#fff', color: '#276749', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Logout
+          </button>
         </div>
       </nav>
 
-      <div className="dashboard-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h2 className="heading-primary" style={{ fontSize: '2rem', marginBottom: 0, color: '#065f46' }}>Supplier Dashboard</h2>
-          <span className="badge badge-success">Verified Supplier</span>
+      <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ color: '#1a365d', margin: '0 0 8px 0', fontSize: '28px' }}>Supplier Dashboard</h2>
+          <p style={{ color: '#666', margin: 0, fontSize: '16px' }}>See what Indian textile MSMEs need and submit your supply quotes</p>
+        </div>
+
+        {/* Summary Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, 1fr)', gap: '24px', marginBottom: '24px' }}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>📊</div>
+            <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>Total Demand Entries</h4>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>{totalDemandEntries} MSME data entries</p>
+          </div>
+          <div style={cardStyle}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>📦</div>
+            <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>My Active Quotes</h4>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>{orders.length} quotes I submitted</p>
+          </div>
         </div>
 
         {/* Demand Chart */}
-        <div className="dashboard-card animate-fade-in delay-1" style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: 0, color: '#065f46' }}>Aggregated MSME Demand by Cluster</h4>
-          </div>
+        <div style={cardStyle}>
+          <h4 style={{ color: '#276749', margin: '0 0 16px', fontSize: '18px' }}>MSME Demand Across India — by Product & Cluster</h4>
           {chartData.length > 0 ? (
-            <div style={{ height: '300px', width: '100%' }}>
+            <div style={{ height: '300px', width: '100%', marginBottom: '16px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={chartData}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="name" tick={{ fontSize: 11, fill: '#64748b' }} axisLine={false} tickLine={false} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dx={-10} />
-                  <Tooltip cursor={{fill: '#f1f5f9'}} contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: 'var(--shadow-md)' }} />
-                  <Bar dataKey="demand" fill="#10b981" radius={[4, 4, 0, 0]} name="Total Demand (Kg)" />
+                <BarChart data={chartData} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="name" tick={{ fontSize: 11 }} />
+                  <YAxis />
+                  <Tooltip />
+                  <Bar dataKey="demand" fill="#276749" name="Total inventory quantity demanded" />
                 </BarChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              No demand data yet. MSMEs need to submit their data first.
-            </div>
+            <p style={{ color: '#666', textAlign: 'center', padding: '40px 0' }}>No MSME demand data yet. MSMEs need to submit their monthly data first.</p>
           )}
+          <p style={{ color: '#666', fontSize: '12px', margin: 0 }}>This data is aggregated from all registered MSMEs on the platform. Submit a quote to supply these products.</p>
         </div>
 
-        <div className="grid-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px' }}>
           {/* Submit Quote */}
-          <div className="dashboard-card animate-fade-in delay-2">
-            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#065f46' }}>Submit Price Quote</h4>
+          <div style={{ ...cardStyle, marginBottom: 0 }}>
+            <h4 style={{ color: '#276749', margin: '0 0 16px', fontSize: '18px' }}>Submit Supply Quote</h4>
             {message && (
-              <div style={{ background: message.includes('Error') ? '#fef2f2' : '#f0fdf4', color: message.includes('Error') ? '#b91c1c' : '#15803d', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+              <div style={{ color: message.includes('Error') ? '#e53e3e' : '#38a169', marginBottom: '16px', fontSize: '14px', fontWeight: 'bold' }}>
                 {message}
               </div>
             )}
-            <form onSubmit={handleQuote}>
-              <div className="grid-2" style={{ gap: '1rem', marginBottom: '1rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Product Type</label>
-                  <input type="text" className="form-input" value={quote.productType} onChange={e => setQuote({ ...quote, productType: e.target.value })} required />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Quantity (Kg)</label>
-                  <input type="number" className="form-input" value={quote.quantityKg} onChange={e => setQuote({ ...quote, quantityKg: e.target.value })} required />
-                </div>
+            <form onSubmit={handleQuote} style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+              <div>
+                <label style={labelStyle}>Product Type</label>
+                <input type="text" value={quote.productType} onChange={e => setQuote({ ...quote, productType: e.target.value })} style={inputStyle} required />
               </div>
-              <div className="grid-2" style={{ gap: '1rem', marginBottom: '1.5rem' }}>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Price per Kg (INR)</label>
-                  <input type="number" className="form-input" value={quote.pricePerKg} onChange={e => setQuote({ ...quote, pricePerKg: e.target.value })} required />
-                </div>
-                <div className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">Cluster Location</label>
-                  <input type="text" className="form-input" value={quote.cluster} onChange={e => setQuote({ ...quote, cluster: e.target.value })} required />
-                </div>
+              <div>
+                <label style={labelStyle}>Quantity in Kg</label>
+                <input type="number" value={quote.quantityKg} onChange={e => setQuote({ ...quote, quantityKg: e.target.value })} style={inputStyle} required />
               </div>
-              <button type="submit" className="btn btn-primary" style={{ background: 'linear-gradient(135deg, #059669, #10b981)', border: 'none' }}>
-                Submit Bulk Quote
+              <div>
+                <label style={labelStyle}>Price per Kg in INR</label>
+                <input type="number" value={quote.pricePerKg} onChange={e => setQuote({ ...quote, pricePerKg: e.target.value })} style={inputStyle} required />
+              </div>
+              <div>
+                <label style={labelStyle}>Cluster</label>
+                <input type="text" value={quote.cluster} onChange={e => setQuote({ ...quote, cluster: e.target.value })} style={inputStyle} required />
+              </div>
+              <div>
+                <label style={labelStyle}>State</label>
+                <input type="text" value={quote.state} onChange={e => setQuote({ ...quote, state: e.target.value })} style={inputStyle} required />
+              </div>
+              <button type="submit" style={{ background: '#276749', color: '#fff', border: 'none', padding: '12px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px', marginTop: '8px' }}>
+                Submit Quote
               </button>
             </form>
           </div>
 
           {/* My Orders */}
-          <div className="dashboard-card animate-fade-in delay-3">
-            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem', color: '#065f46' }}>My Orders & Quotes</h4>
+          <div style={{ ...cardStyle, marginBottom: 0 }}>
+            <h4 style={{ color: '#276749', margin: '0 0 16px', fontSize: '18px' }}>My Quotes & Orders</h4>
             {orders.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {orders.map((order, i) => (
-                  <div key={i} style={{ background: '#f0fdf4', padding: '1rem', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid #10b981', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                  <div key={i} style={{ padding: '16px', border: '1px solid #ddd', borderRadius: '8px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                     <div>
-                      <p style={{ margin: 0, fontWeight: '700', fontSize: '1rem', color: '#065f46' }}>{order.productType}</p>
-                      <p style={{ margin: '0.25rem 0 0', fontSize: '0.85rem', color: '#15803d' }}>
-                        Qty: {order.quantityKg} Kg • Price: ₹{order.pricePerKg}/Kg
+                      <p style={{ margin: 0, fontWeight: 'bold', fontSize: '16px', color: '#1a202c' }}>{order.productType}</p>
+                      <p style={{ margin: '4px 0 0', fontSize: '14px', color: '#718096' }}>
+                        {order.quantityKg} Kg | ₹{order.pricePerKg}/Kg
                       </p>
                     </div>
-                    <span className={`badge ${order.status === 'delivered' ? 'badge-success' : order.status === 'accepted' ? 'badge-info' : 'badge-warning'}`}>
-                      {order.status}
+                    <span style={{ 
+                      background: order.status === 'delivered' ? '#48bb78' : order.status === 'accepted' ? '#4299e1' : '#ed8936', 
+                      color: '#fff', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold', textTransform: 'capitalize' 
+                    }}>
+                      {order.status || 'pending'}
                     </span>
                   </div>
                 ))}
               </div>
             ) : (
-               <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>No quotes or orders yet.</div>
+               <p style={{ color: '#666' }}>You haven't submitted any quotes yet.</p>
             )}
           </div>
         </div>
