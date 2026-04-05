@@ -11,19 +11,19 @@ pipeline {
 
         stage('Build Docker Images') {
             steps {
-                sh 'docker-compose build'
+                sh 'docker compose build'
             }
         }
 
         stage('Run Tests') {
             steps {
-                sh 'docker-compose run server node -e "console.log(\"Server test passed\")"'
+                sh 'docker compose run server node -e "console.log(\\"Server test passed\\")"'
             }
         }
 
         stage('Deploy') {
             steps {
-                sh 'docker-compose up -d'
+                sh 'docker compose up -d'
                 echo 'Deployed successfully'
             }
         }
