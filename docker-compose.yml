@@ -5,6 +5,11 @@ services:
     build: ./client
     ports:
       - "3000:3000"
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     depends_on:
       - server
 
@@ -12,10 +17,14 @@ services:
     build: ./server
     ports:
       - "5001:5000"
+    volumes:
+      - ./server:/app
+      - /app/node_modules
     environment:
-      - MONGO_URI=mongodb+srv://golipavansaikrishna2608_db_user:X1WKz2FcBfQLVnbR@cluster0.bvyloaz.mongodb.net/?appName=Cluster0
+      - MONGO_URI=mongodb+srv://golipavansaikrishna2608_db_user:Jc1ar3ufR6gjaqxq@cluster0.bvyloaz.mongodb.net/?appName=Cluster0
       - JWT_SECRET=indiamsme2024secretkey
       - FLASK_URL=http://ai-service:8000
+      - PORT=5000
     depends_on:
       - ai-service
 
@@ -23,3 +32,5 @@ services:
     build: ./ai-service
     ports:
       - "8000:8000"
+    volumes:
+      - ./ai-service:/app
