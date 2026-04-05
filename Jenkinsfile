@@ -5,7 +5,7 @@ pipeline {
         stage('Clone Repository') {
             steps {
                 git branch: 'main',
-                    url: 'https://github.com/yourusername/india-msme-platform.git'
+                    url: 'https://github.com/pavansai2608/msme-platform.git'
             }
         }
 
