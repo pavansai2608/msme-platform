@@ -47,11 +47,11 @@ export default function MSMEDashboard() {
     e.preventDefault();
     try {
       await API.post('/msme/data', form);
-      setMessage('Data saved successfully');
+      setMessage('✅ Data saved! Your forecasts will be updated.');
       setForm({ month: '', salesRevenue: '', inventoryQty: '', rawMaterialCost: '', productType: '' });
       fetchInsights();
     } catch (err) {
-      setMessage('Error saving data: ' + (err.response?.data?.message || err.message));
+      setMessage('❌ Error saving data: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -60,121 +60,151 @@ export default function MSMEDashboard() {
     navigate('/login');
   };
 
+  const getEmojiForInsight = (text) => {
+    const t = text.toLowerCase();
+    if (t.includes('sale') || t.includes('revenue') || t.includes('cost')) return '💰';
+    if (t.includes('scheme') || t.includes('loan')) return '🏛️';
+    return '📦';
+  };
+
+  const cardStyle = { background: '#fff', padding: '24px', borderRadius: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '24px' };
+  const inputStyle = { width: '100%', padding: '10px', borderRadius: '8px', border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' };
+  const labelStyle = { display: 'block', marginBottom: '4px', fontSize: '14px', fontWeight: '500' };
+
   return (
-    <div>
+    <div style={{ minHeight: '100vh', background: '#f0f4f8', fontFamily: 'sans-serif' }}>
       {/* Navbar */}
-      <nav className="navbar">
-        <div className="navbar-brand">India MSME Platform</div>
-        <div className="navbar-nav">
-          <span className="nav-link">Welcome, {name}</span>
-          <button onClick={logout} className="btn-logout">Logout</button>
+      <nav style={{ background: '#2b6cb0', padding: '16px 32px', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+        <h2 style={{ color: '#fff', margin: 0, fontSize: '20px' }}>India MSME Platform</h2>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
+          <span style={{ color: '#fff', fontSize: '14px' }}>Welcome, {name}</span>
+          <button onClick={logout} style={{ background: '#fff', color: '#2b6cb0', border: 'none', padding: '8px 16px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}>
+            Logout
+          </button>
         </div>
       </nav>
 
-      <div className="dashboard-container">
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <h2 className="heading-primary" style={{ fontSize: '2rem', marginBottom: 0 }}>MSME Owner Dashboard</h2>
-          <span className="badge badge-info">Active Plan</span>
+      <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
+        <div style={{ marginBottom: '24px' }}>
+          <h2 style={{ color: '#1a365d', margin: '0 0 8px 0', fontSize: '28px' }}>MSME Owner Dashboard</h2>
+          <p style={{ color: '#666', margin: 0, fontSize: '16px' }}>Your AI-powered business intelligence center</p>
+        </div>
+
+        {/* 3 Summary Cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '24px', marginBottom: '24px' }}>
+          <div style={cardStyle}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>📈</div>
+            <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>Demand Forecast</h4>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>Next 3 months forecast available</p>
+          </div>
+          <div style={cardStyle}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>💡</div>
+            <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>AI Insights</h4>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>{insights.length} business tips ready</p>
+          </div>
+          <div style={cardStyle}>
+            <div style={{ fontSize: '24px', marginBottom: '8px' }}>🏛️</div>
+            <h4 style={{ margin: '0 0 4px', fontSize: '16px' }}>Govt Schemes</h4>
+            <p style={{ margin: 0, color: '#666', fontSize: '14px' }}>{schemes.length} schemes you qualify for</p>
+          </div>
         </div>
 
         {/* Forecast Chart */}
-        <div className="dashboard-card animate-fade-in delay-1" style={{ marginBottom: '1.5rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: 0 }}>Textile Demand Forecast (Prophet AI)</h4>
-            <span className="badge badge-success">Live Forecast</span>
-          </div>
-          
+        <div style={cardStyle}>
+          <h4 style={{ color: '#1a365d', margin: '0 0 16px', fontSize: '18px' }}>Textile Demand Forecast — Next 3 Months</h4>
           {forecast.length > 0 ? (
-            <div style={{ height: '300px', width: '100%' }}>
+            <div style={{ height: '300px', width: '100%', marginBottom: '16px' }}>
               <ResponsiveContainer width="100%" height="100%">
-                <LineChart data={forecast}>
-                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
-                  <XAxis dataKey="ds" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
-                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dx={-10} />
-                  <Tooltip 
-                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
-                  />
-                  <Line type="monotone" dataKey="yhat" stroke="var(--color-primary)" strokeWidth={3} dot={{r: 4, fill: "var(--color-primary)", strokeWidth: 2}} activeDot={{r: 6}} name="Expected Demand" />
-                  <Line type="monotone" dataKey="yhat_upper" stroke="var(--color-accent)" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Upper Bound" />
-                  <Line type="monotone" dataKey="yhat_lower" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Lower Bound" />
+                <LineChart data={forecast} margin={{ top: 5, right: 30, left: 20, bottom: 5 }}>
+                  <CartesianGrid strokeDasharray="3 3" />
+                  <XAxis dataKey="ds" />
+                  <YAxis />
+                  <Tooltip />
+                  <Line type="monotone" dataKey="yhat" stroke="#2b6cb0" strokeWidth={3} name="Predicted demand" />
+                  <Line type="monotone" dataKey="yhat_upper" stroke="#48bb78" strokeWidth={2} strokeDasharray="5 5" name="Upper estimate" />
+                  <Line type="monotone" dataKey="yhat_lower" stroke="#e53e3e" strokeWidth={2} strokeDasharray="5 5" name="Lower estimate" />
                 </LineChart>
               </ResponsiveContainer>
             </div>
           ) : (
-            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
-              Loading forecast from AI Service...
-            </div>
+            <p style={{ color: '#666', textAlign: 'center', padding: '40px 0' }}>Loading forecast data...</p>
           )}
+          <p style={{ color: '#666', fontSize: '12px', margin: 0 }}>This forecast is generated by our AI model trained on 8 years of Indian textile production data from MOSPI</p>
         </div>
 
-        <div className="grid-2">
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
           {/* AI Insights */}
-          <div className="dashboard-card animate-fade-in delay-2">
-            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>AI Business Insights</h4>
+          <div style={cardStyle}>
+            <h4 style={{ color: '#1a365d', margin: '0 0 16px', fontSize: '18px' }}>AI Business Recommendations</h4>
             {insights.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {insights.map((insight, i) => (
-                  <div key={i} style={{ background: '#f0f9ff', padding: '1rem', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--color-secondary)' }}>
-                    <p style={{ margin: 0, fontSize: '0.95rem', color: '#0369a1', lineHeight: '1.5' }}>{insight}</p>
+                  <div key={i} style={{ background: '#ebf8ff', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #2b6cb0' }}>
+                    <p style={{ margin: 0, fontSize: '14px', color: '#1a365d', lineHeight: '1.5' }}>
+                      {getEmojiForInsight(insight)} {insight}
+                    </p>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading intelligent insights...</div>
+              <p style={{ color: '#666' }}>Loading intelligent insights...</p>
             )}
           </div>
 
           {/* Government Schemes */}
-          <div className="dashboard-card animate-fade-in delay-2">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: 0 }}>Eligible Government Schemes</h4>
-              <span className="badge badge-warning">{schemes.length} Available</span>
-            </div>
-            
+          <div style={cardStyle}>
+            <h4 style={{ color: '#1a365d', margin: '0 0 16px', fontSize: '18px' }}>Schemes You Qualify For</h4>
             {schemes.length > 0 ? (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '12px' }}>
                 {schemes.map((scheme, i) => (
-                  <div key={i} style={{ background: '#f0fdf4', padding: '1rem', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--color-accent)' }}>
-                    <p style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem', color: '#166534' }}>{scheme.name}</p>
-                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#15803d' }}>{scheme.benefit}</p>
+                  <div key={i} style={{ background: '#f0fff4', padding: '16px', borderRadius: '8px', borderLeft: '4px solid #48bb78' }}>
+                    <p style={{ margin: 0, fontWeight: 'bold', fontSize: '14px', color: '#1a202c' }}>{scheme.name}</p>
+                    <p style={{ margin: '4px 0 12px', fontSize: '13px', color: '#718096' }}>{scheme.benefit}</p>
+                    <button onClick={() => alert('Coming soon')} style={{ background: '#48bb78', color: '#fff', border: 'none', padding: '6px 12px', borderRadius: '4px', cursor: 'pointer', fontSize: '12px', fontWeight: 'bold' }}>
+                      Apply
+                    </button>
                   </div>
                 ))}
               </div>
             ) : (
-              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Discovering government schemes...</div>
+              <p style={{ color: '#666' }}>Discovering government schemes...</p>
             )}
           </div>
         </div>
 
         {/* Data Entry Form */}
-        <div className="dashboard-card animate-fade-in delay-3">
-          <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Update Monthly Data</h4>
+        <div style={cardStyle}>
+          <div style={{ marginBottom: '20px' }}>
+            <h4 style={{ color: '#1a365d', margin: '0 0 8px', fontSize: '18px' }}>Enter Your Monthly Business Data</h4>
+            <p style={{ color: '#666', margin: 0, fontSize: '14px' }}>Enter your data every month to get updated AI forecasts and insights</p>
+          </div>
           
           {message && (
-            <div style={{ background: message.includes('Error') ? '#fef2f2' : '#f0fdf4', color: message.includes('Error') ? '#b91c1c' : '#15803d', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+             <div style={{ color: message.includes('Error') ? '#e53e3e' : '#38a169', marginBottom: '16px', fontSize: '14px', fontWeight: 'bold' }}>
               {message}
             </div>
           )}
 
           <form onSubmit={handleSubmit}>
-            <div className="grid-3">
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
               {[
-                ['Month (YYYY-MM)', 'month', 'text'],
-                ['Sales (INR)', 'salesRevenue', 'number'],
-                ['Inventory Qty', 'inventoryQty', 'number'],
-                ['Material Cost', 'rawMaterialCost', 'number'],
-                ['Product Type', 'productType', 'text']
-              ].map(([label, key, type]) => (
-                <div key={key} className="form-group" style={{ marginBottom: 0 }}>
-                  <label className="form-label">{label}</label>
-                  <input type={type} className="form-input" value={form[key]}
+                ['Month', 'month', 'text', '2024-10'],
+                ['Sales Revenue in INR', 'salesRevenue', 'number', ''],
+                ['Inventory Quantity', 'inventoryQty', 'number', ''],
+                ['Raw Material Cost in INR', 'rawMaterialCost', 'number', ''],
+                ['Product Type', 'productType', 'text', 'e.g. Saree']
+              ].map(([label, key, type, placeholder]) => (
+                <div key={key}>
+                  <label style={labelStyle}>{label}</label>
+                  <input type={type} placeholder={placeholder} value={form[key]}
                     onChange={e => setForm({ ...form, [key]: e.target.value })}
+                    style={inputStyle}
                     required={key === 'month' || key === 'salesRevenue'} />
                 </div>
               ))}
-              <div style={{ display: 'flex', alignItems: 'flex-end', paddingTop: '1.5rem' }}>
-                <button type="submit" className="btn btn-primary" style={{ height: '42px' }}>
-                  Update Data & Refine AI
+              <div style={{ display: 'flex', alignItems: 'flex-end', gridColumn: 'span 2' }}>
+                <button type="submit" style={{ background: '#2b6cb0', color: '#fff', border: 'none', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold', fontSize: '16px' }}>
+                  Save My Data
                 </button>
               </div>
             </div>
