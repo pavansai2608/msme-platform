@@ -5,10 +5,13 @@ import API from '../api/axios';
 export default function Login() {
   const [form, setForm] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
+    setError('');
     try {
       const res = await API.post('/auth/login', form);
       localStorage.setItem('token', res.data.token);
@@ -18,52 +21,60 @@ export default function Login() {
       else if (res.data.role === 'supplier') navigate('/supplier-dashboard');
       else if (res.data.role === 'admin') navigate('/admin-dashboard');
     } catch (err) {
-      setError(err.response?.data?.message || 'Login failed');
+      setError(err.response?.data?.message || 'Login failed. Please check your credentials.');
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', alignItems: 'center',
-      justifyContent: 'center', background: '#f0f4f8' }}>
-      <div style={{ background: '#fff', padding: '40px', borderRadius: '12px',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.1)', width: '400px' }}>
-        <h2 style={{ textAlign: 'center', color: '#1a365d', marginBottom: '8px' }}>
-          India MSME Platform
-        </h2>
-        <p style={{ textAlign: 'center', color: '#666', marginBottom: '30px' }}>
-          Sign in to your account
-        </p>
-        {error && <p style={{ color: 'red', textAlign: 'center' }}>{error}</p>}
+    <div className="auth-wrapper">
+      <div className="glass-card animate-fade-in">
+        <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
+          <h2 className="heading-primary heading-gradient">India MSME Platform</h2>
+          <p className="text-sub">Sign in to your account</p>
+        </div>
+
+        {error && (
+          <div style={{ background: '#fef2f2', color: '#b91c1c', padding: '1rem', borderRadius: '8px', marginBottom: '1.5rem', fontSize: '0.9rem', textAlign: 'center' }}>
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit}>
-          <div style={{ marginBottom: '16px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
-              Email
-            </label>
-            <input type="email" value={form.email}
+          <div className="form-group delay-1 animate-fade-in">
+            <label className="form-label">Email Address</label>
+            <input 
+              type="email" 
+              className="form-input" 
+              placeholder="you@example.com"
+              value={form.email}
               onChange={e => setForm({ ...form, email: e.target.value })}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px',
-                border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' }}
-              required />
+              required 
+            />
           </div>
-          <div style={{ marginBottom: '24px' }}>
-            <label style={{ display: 'block', marginBottom: '6px', fontWeight: '500' }}>
-              Password
-            </label>
-            <input type="password" value={form.password}
+
+          <div className="form-group delay-2 animate-fade-in">
+            <label className="form-label">Password</label>
+            <input 
+              type="password" 
+              className="form-input" 
+              placeholder="••••••••"
+              value={form.password}
               onChange={e => setForm({ ...form, password: e.target.value })}
-              style={{ width: '100%', padding: '10px', borderRadius: '8px',
-                border: '1px solid #ddd', fontSize: '14px', boxSizing: 'border-box' }}
-              required />
+              required 
+            />
           </div>
-          <button type="submit"
-            style={{ width: '100%', padding: '12px', background: '#2b6cb0',
-              color: '#fff', border: 'none', borderRadius: '8px',
-              fontSize: '16px', cursor: 'pointer', fontWeight: '600' }}>
-            Login
-          </button>
+
+          <div className="form-group delay-3 animate-fade-in" style={{ marginTop: '2rem' }}>
+            <button type="submit" className="btn btn-primary" disabled={loading}>
+              {loading ? 'Signing in...' : 'Sign In'}
+            </button>
+          </div>
         </form>
-        <p style={{ textAlign: 'center', marginTop: '20px', color: '#666' }}>
-          Don't have an account? <Link to="/register" style={{ color: '#2b6cb0' }}>Register</Link>
+
+        <p className="text-sub" style={{ textAlign: 'center', marginTop: '1.5rem' }}>
+          Don't have an account? <Link to="/register" style={{ color: 'var(--color-primary)', fontWeight: '600', textDecoration: 'none' }}>Register here</Link>
         </p>
       </div>
     </div>

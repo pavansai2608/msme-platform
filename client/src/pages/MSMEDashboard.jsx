@@ -51,7 +51,7 @@ export default function MSMEDashboard() {
       setForm({ month: '', salesRevenue: '', inventoryQty: '', rawMaterialCost: '', productType: '' });
       fetchInsights();
     } catch (err) {
-      setMessage('Error saving data');
+      setMessage('Error saving data: ' + (err.response?.data?.message || err.message));
     }
   };
 
@@ -61,100 +61,122 @@ export default function MSMEDashboard() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#f0f4f8', fontFamily: 'sans-serif' }}>
+    <div>
       {/* Navbar */}
-      <div style={{ background: '#2b6cb0', padding: '16px 32px', display: 'flex',
-        justifyContent: 'space-between', alignItems: 'center' }}>
-        <h2 style={{ color: '#fff', margin: 0 }}>India MSME Platform</h2>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '16px' }}>
-          <span style={{ color: '#fff' }}>Welcome, {name}</span>
-          <button onClick={logout}
-            style={{ background: '#fff', color: '#2b6cb0', border: 'none',
-              padding: '8px 16px', borderRadius: '6px', cursor: 'pointer', fontWeight: '600' }}>
-            Logout
-          </button>
+      <nav className="navbar">
+        <div className="navbar-brand">India MSME Platform</div>
+        <div className="navbar-nav">
+          <span className="nav-link">Welcome, {name}</span>
+          <button onClick={logout} className="btn-logout">Logout</button>
         </div>
-      </div>
+      </nav>
 
-      <div style={{ padding: '32px', maxWidth: '1200px', margin: '0 auto' }}>
-        <h3 style={{ color: '#1a365d', marginBottom: '24px' }}>MSME Owner Dashboard</h3>
+      <div className="dashboard-container">
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+          <h2 className="heading-primary" style={{ fontSize: '2rem', marginBottom: 0 }}>MSME Owner Dashboard</h2>
+          <span className="badge badge-info">Active Plan</span>
+        </div>
 
         {/* Forecast Chart */}
-        <div style={{ background: '#fff', padding: '24px', borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)', marginBottom: '24px' }}>
-          <h4 style={{ color: '#2b6cb0', marginBottom: '16px' }}>Textile Demand Forecast — Next 3 Months</h4>
+        <div className="dashboard-card animate-fade-in delay-1" style={{ marginBottom: '1.5rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: 0 }}>Textile Demand Forecast (Prophet AI)</h4>
+            <span className="badge badge-success">Live Forecast</span>
+          </div>
+          
           {forecast.length > 0 ? (
-            <ResponsiveContainer width="100%" height={250}>
-              <LineChart data={forecast}>
-                <CartesianGrid strokeDasharray="3 3" />
-                <XAxis dataKey="ds" />
-                <YAxis />
-                <Tooltip />
-                <Line type="monotone" dataKey="yhat" stroke="#2b6cb0" strokeWidth={2} name="Forecast" />
-                <Line type="monotone" dataKey="yhat_upper" stroke="#48bb78" strokeWidth={1} strokeDasharray="5 5" name="Upper" />
-                <Line type="monotone" dataKey="yhat_lower" stroke="#fc8181" strokeWidth={1} strokeDasharray="5 5" name="Lower" />
-              </LineChart>
-            </ResponsiveContainer>
+            <div style={{ height: '300px', width: '100%' }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <LineChart data={forecast}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#e2e8f0" />
+                  <XAxis dataKey="ds" axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dy={10} />
+                  <YAxis axisLine={false} tickLine={false} tick={{fill: '#64748b', fontSize: 12}} dx={-10} />
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: 'none', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.1)' }}
+                  />
+                  <Line type="monotone" dataKey="yhat" stroke="var(--color-primary)" strokeWidth={3} dot={{r: 4, fill: "var(--color-primary)", strokeWidth: 2}} activeDot={{r: 6}} name="Expected Demand" />
+                  <Line type="monotone" dataKey="yhat_upper" stroke="var(--color-accent)" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Upper Bound" />
+                  <Line type="monotone" dataKey="yhat_lower" stroke="#f43f5e" strokeWidth={2} strokeDasharray="5 5" dot={false} name="Lower Bound" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
           ) : (
-            <p style={{ color: '#666', textAlign: 'center' }}>Loading forecast...</p>
+            <div style={{ padding: '3rem', textAlign: 'center', color: 'var(--text-muted)' }}>
+              Loading forecast from AI Service...
+            </div>
           )}
         </div>
 
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '24px', marginBottom: '24px' }}>
+        <div className="grid-2">
           {/* AI Insights */}
-          <div style={{ background: '#fff', padding: '24px', borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <h4 style={{ color: '#2b6cb0', marginBottom: '16px' }}>AI Business Insights</h4>
-            {insights.length > 0 ? insights.map((insight, i) => (
-              <div key={i} style={{ background: '#ebf8ff', padding: '12px', borderRadius: '8px',
-                marginBottom: '12px', borderLeft: '4px solid #2b6cb0' }}>
-                <p style={{ margin: 0, fontSize: '14px', color: '#1a365d' }}>{insight}</p>
+          <div className="dashboard-card animate-fade-in delay-2">
+            <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>AI Business Insights</h4>
+            {insights.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {insights.map((insight, i) => (
+                  <div key={i} style={{ background: '#f0f9ff', padding: '1rem', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--color-secondary)' }}>
+                    <p style={{ margin: 0, fontSize: '0.95rem', color: '#0369a1', lineHeight: '1.5' }}>{insight}</p>
+                  </div>
+                ))}
               </div>
-            )) : <p style={{ color: '#666' }}>Loading insights...</p>}
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Loading intelligent insights...</div>
+            )}
           </div>
 
           {/* Government Schemes */}
-          <div style={{ background: '#fff', padding: '24px', borderRadius: '12px',
-            boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-            <h4 style={{ color: '#2b6cb0', marginBottom: '16px' }}>Eligible Government Schemes</h4>
-            {schemes.length > 0 ? schemes.map((scheme, i) => (
-              <div key={i} style={{ background: '#f0fff4', padding: '12px', borderRadius: '8px',
-                marginBottom: '12px', borderLeft: '4px solid #48bb78' }}>
-                <p style={{ margin: 0, fontWeight: '600', fontSize: '14px', color: '#276749' }}>{scheme.name}</p>
-                <p style={{ margin: '4px 0 0', fontSize: '13px', color: '#666' }}>{scheme.benefit}</p>
+          <div className="dashboard-card animate-fade-in delay-2">
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: 0 }}>Eligible Government Schemes</h4>
+              <span className="badge badge-warning">{schemes.length} Available</span>
+            </div>
+            
+            {schemes.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {schemes.map((scheme, i) => (
+                  <div key={i} style={{ background: '#f0fdf4', padding: '1rem', borderRadius: 'var(--radius-sm)', borderLeft: '4px solid var(--color-accent)' }}>
+                    <p style={{ margin: 0, fontWeight: '700', fontSize: '0.95rem', color: '#166534' }}>{scheme.name}</p>
+                    <p style={{ margin: '0.5rem 0 0', fontSize: '0.85rem', color: '#15803d' }}>{scheme.benefit}</p>
+                  </div>
+                ))}
               </div>
-            )) : <p style={{ color: '#666' }}>Loading schemes...</p>}
+            ) : (
+              <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--text-muted)' }}>Discovering government schemes...</div>
+            )}
           </div>
         </div>
 
         {/* Data Entry Form */}
-        <div style={{ background: '#fff', padding: '24px', borderRadius: '12px',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.08)' }}>
-          <h4 style={{ color: '#2b6cb0', marginBottom: '16px' }}>Enter Monthly Business Data</h4>
-          {message && <p style={{ color: message.includes('Error') ? 'red' : 'green' }}>{message}</p>}
-          <form onSubmit={handleSubmit} style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px' }}>
-            {[
-              ['Month (e.g. 2024-10)', 'month', 'text'],
-              ['Sales Revenue (INR)', 'salesRevenue', 'number'],
-              ['Inventory Quantity', 'inventoryQty', 'number'],
-              ['Raw Material Cost (INR)', 'rawMaterialCost', 'number'],
-              ['Product Type', 'productType', 'text']
-            ].map(([label, key, type]) => (
-              <div key={key}>
-                <label style={{ display: 'block', marginBottom: '4px', fontSize: '13px', fontWeight: '500' }}>{label}</label>
-                <input type={type} value={form[key]}
-                  onChange={e => setForm({ ...form, [key]: e.target.value })}
-                  style={{ width: '100%', padding: '8px', borderRadius: '6px',
-                    border: '1px solid #ddd', fontSize: '13px', boxSizing: 'border-box' }} />
+        <div className="dashboard-card animate-fade-in delay-3">
+          <h4 className="heading-primary" style={{ fontSize: '1.25rem', marginBottom: '1.5rem' }}>Update Monthly Data</h4>
+          
+          {message && (
+            <div style={{ background: message.includes('Error') ? '#fef2f2' : '#f0fdf4', color: message.includes('Error') ? '#b91c1c' : '#15803d', padding: '1rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', fontSize: '0.95rem' }}>
+              {message}
+            </div>
+          )}
+
+          <form onSubmit={handleSubmit}>
+            <div className="grid-3">
+              {[
+                ['Month (YYYY-MM)', 'month', 'text'],
+                ['Sales (INR)', 'salesRevenue', 'number'],
+                ['Inventory Qty', 'inventoryQty', 'number'],
+                ['Material Cost', 'rawMaterialCost', 'number'],
+                ['Product Type', 'productType', 'text']
+              ].map(([label, key, type]) => (
+                <div key={key} className="form-group" style={{ marginBottom: 0 }}>
+                  <label className="form-label">{label}</label>
+                  <input type={type} className="form-input" value={form[key]}
+                    onChange={e => setForm({ ...form, [key]: e.target.value })}
+                    required={key === 'month' || key === 'salesRevenue'} />
+                </div>
+              ))}
+              <div style={{ display: 'flex', alignItems: 'flex-end', paddingTop: '1.5rem' }}>
+                <button type="submit" className="btn btn-primary" style={{ height: '42px' }}>
+                  Update Data & Refine AI
+                </button>
               </div>
-            ))}
-            <div style={{ gridColumn: 'span 2' }}>
-              <button type="submit"
-                style={{ background: '#2b6cb0', color: '#fff', border: 'none',
-                  padding: '12px 32px', borderRadius: '8px', cursor: 'pointer',
-                  fontWeight: '600', fontSize: '14px' }}>
-                Save Data
-              </button>
             </div>
           </form>
         </div>
